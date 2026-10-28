@@ -1,0 +1,6 @@
+# Opcional: tool calling com LangChain.
+# pip install -r requirements-llm.txt
+langchain>=0.3
+langchain-core>=0.3
+langchain-google-genai>=2.0
+langchain-openai>=0.2

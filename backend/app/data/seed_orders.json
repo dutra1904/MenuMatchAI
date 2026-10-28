@@ -1,0 +1,155 @@
+[
+  {
+    "day": "today",
+    "slot": 0.96,
+    "zone": "centro",
+    "items": [{ "dish_id": "vl-bowl-frango", "qty": 1 }],
+    "dietary_notes": ["sem lactose"],
+    "customer_query": "quero algo sem lactose, rápido e por menos de R$ 40"
+  },
+  {
+    "day": "today",
+    "slot": 0.9,
+    "zone": "zona_sul",
+    "items": [{ "dish_id": "vl-quinoa", "qty": 1 }],
+    "dietary_notes": ["vegano"],
+    "customer_query": "almoço vegano e leve"
+  },
+  {
+    "day": "today",
+    "slot": 0.84,
+    "zone": "centro",
+    "items": [{ "dish_id": "sz-poke", "qty": 1 }],
+    "dietary_notes": ["sem lactose", "sem glúten"],
+    "customer_query": "um poke sem glúten"
+  },
+  {
+    "day": "today",
+    "slot": 0.78,
+    "zone": "zona_norte",
+    "items": [{ "dish_id": "sq-tapioca", "qty": 1 }],
+    "dietary_notes": ["sem lactose", "sem glúten"],
+    "customer_query": "tapioca de frango pra agora"
+  },
+  {
+    "day": "today",
+    "slot": 0.7,
+    "zone": "zona_oeste",
+    "items": [
+      { "dish_id": "bb-sem-queijo", "qty": 1 },
+      { "dish_id": "bb-batata", "qty": 1 }
+    ],
+    "dietary_notes": ["sem lactose"],
+    "customer_query": "hambúrguer sem queijo e uma batata"
+  },
+  {
+    "day": "today",
+    "slot": 0.62,
+    "zone": "centro",
+    "items": [{ "dish_id": "ap-zero", "qty": 1 }],
+    "dietary_notes": ["sem lactose", "vegano"],
+    "customer_query": "açaí sem lactose"
+  },
+  {
+    "day": "today",
+    "slot": 0.55,
+    "zone": "zona_sul",
+    "items": [{ "dish_id": "sz-temaki", "qty": 1 }],
+    "dietary_notes": [],
+    "customer_query": "temaki de salmão na zona sul"
+  },
+  {
+    "day": "today",
+    "slot": 0.48,
+    "zone": "centro",
+    "items": [{ "dish_id": "vl-bowl-frango", "qty": 1 }],
+    "dietary_notes": ["sem lactose"],
+    "customer_query": "repete o bowl de frango"
+  },
+  {
+    "day": "today",
+    "slot": 0.4,
+    "zone": "centro",
+    "items": [{ "dish_id": "bn-penne", "qty": 1 }],
+    "dietary_notes": ["sem lactose"],
+    "customer_query": "massa sem queijo"
+  },
+  {
+    "day": "today",
+    "slot": 0.32,
+    "zone": "zona_leste",
+    "items": [{ "dish_id": "sq-cuscuz", "qty": 1 }],
+    "dietary_notes": [],
+    "customer_query": "algo barato e rápido"
+  },
+  {
+    "day": "today",
+    "slot": 0.22,
+    "zone": "centro",
+    "items": [{ "dish_id": "vl-falafel", "qty": 1 }],
+    "dietary_notes": ["vegano"],
+    "customer_query": "wrap vegano"
+  },
+  {
+    "day": "today",
+    "slot": 0.12,
+    "zone": "centro",
+    "items": [
+      { "dish_id": "sz-poke", "qty": 1 },
+      { "dish_id": "sz-sunomono", "qty": 1 }
+    ],
+    "dietary_notes": ["sem glúten"],
+    "customer_query": "poke e uma entrada"
+  },
+  {
+    "day": "yesterday",
+    "slot": 0.2,
+    "zone": "centro",
+    "items": [{ "dish_id": "bn-margherita", "qty": 1 }],
+    "dietary_notes": [],
+    "customer_query": "pizza margherita"
+  },
+  {
+    "day": "yesterday",
+    "slot": 0.45,
+    "zone": "zona_sul",
+    "items": [{ "dish_id": "sq-moqueca", "qty": 1 }],
+    "dietary_notes": ["sem lactose"],
+    "customer_query": "moqueca de peixe"
+  },
+  {
+    "day": "yesterday",
+    "slot": 0.6,
+    "zone": "centro",
+    "items": [{ "dish_id": "sq-baiao", "qty": 1 }],
+    "dietary_notes": [],
+    "customer_query": "baião de dois"
+  },
+  {
+    "day": "yesterday",
+    "slot": 0.8,
+    "zone": "centro",
+    "items": [
+      { "dish_id": "bb-smash", "qty": 1 },
+      { "dish_id": "bb-milkshake", "qty": 1 }
+    ],
+    "dietary_notes": [],
+    "customer_query": "smash e milkshake"
+  },
+  {
+    "day": "yesterday",
+    "slot": 1.1,
+    "zone": "centro",
+    "items": [{ "dish_id": "vl-bowl-frango", "qty": 1 }],
+    "dietary_notes": ["sem lactose"],
+    "customer_query": "bowl de frango de novo"
+  },
+  {
+    "day": "yesterday",
+    "slot": 1.4,
+    "zone": "zona_oeste",
+    "items": [{ "dish_id": "bn-calabresa", "qty": 1 }],
+    "dietary_notes": [],
+    "customer_query": "pizza de calabresa"
+  }
+]
