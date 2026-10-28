@@ -9,7 +9,7 @@ BACKEND = Path(__file__).resolve().parents[1]
 class Settings(BaseSettings):
     llm_provider: str = "auto"
     gemini_api_key: str = ""
-    gemini_model: str = "gemini-2.0-flash"
+    gemini_model: str = "gemini-3.5-flash"
     openai_api_key: str = ""
     openai_model: str = "gpt-4o-mini"
     database_url: str = "sqlite:///./menumatch.db"

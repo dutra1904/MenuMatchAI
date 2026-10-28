@@ -103,6 +103,8 @@ def _model(provider: str):
             model=settings.gemini_model,
             google_api_key=settings.gemini_api_key,
             temperature=0.2,
+            timeout=30,
+            max_retries=1,
         )
     from langchain_openai import ChatOpenAI
 
