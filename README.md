@@ -2,7 +2,7 @@
 
 Agente de recomendação e atendimento de cardápios para delivery. A pessoa descreve o que quer em linguagem natural — restrição, pressa, teto de preço, região — e o sistema devolve pratos do cardápio e um pedido em JSON, com subtotal, taxa de entrega e total.
 
-O repositório sobe sem chave de API. O orquestrador local chama as mesmas ferramentas da versão com LLM. Com `GEMINI_API_KEY` ou `OPENAI_API_KEY`, o atendimento passa a usar tool calling via LangChain e, se o modelo não consultar as ferramentas, a resposta volta para o orquestrador local.
+O repositório sobe sem chave de API. O orquestrador local chama as mesmas ferramentas da versão com LLM. Com `GEMINI_API_KEY` ou `OPENAI_API_KEY`, o atendimento passa a usar tool calling via LangChain e, se o modelo não consultar as ferramentas, a resposta volta para o orquestrador local. test
 
 ## Arquitetura
 
