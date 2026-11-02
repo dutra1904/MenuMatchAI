@@ -1,6 +1,7 @@
 from app.catalog import DishView
 from app.pricing import Quote
 from app.schemas import DishOut, OrderItemOut, OrderOut
+from app.services.classifier import predict_tags
 
 
 def dish_out(dish: DishView) -> DishOut:
@@ -25,6 +26,7 @@ def dish_out(dish: DishView) -> DishOut:
         kind=dish.kind,
         category=dish.category,
         badges=badges[:3],
+        predicted_tags=predict_tags(f"{dish.name}. {dish.description}"),
     )
 
 

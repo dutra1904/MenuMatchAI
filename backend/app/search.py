@@ -9,9 +9,11 @@ from pathlib import Path
 
 from sklearn.metrics.pairwise import cosine_similarity
 
-from app.catalog import DishView
-from app.config import BACKEND
+from app.catalog import DishView, _catalog_hash
+from app.config import BACKEND, settings
 from app.embeddings import TfidfEmbedder, document_text, expand_query, fold
+from app.services.sentence_embeddings import SentenceEmbedder
+from app.services.vector_store import VectorStore
 
 CACHE_DIR = BACKEND / ".cache"
 KIND_HINTS = {
@@ -48,23 +50,42 @@ def _mentions_food(dish: DishView, folded_query: str) -> bool:
 
 class MenuIndex:
     def __init__(self) -> None:
-        self.embedder = TfidfEmbedder()
+        self.provider = settings.embedding_provider.strip().lower() or "minilm"
+        self.model_name = settings.embedding_model
+        self.embedder = TfidfEmbedder() if self.provider == "tfidf" else SentenceEmbedder(self.model_name)
+        self.store = VectorStore(CACHE_DIR / "vectors")
         self.dishes: list[DishView] = []
         self.meta: dict = {
-            "provider": "tfidf",
+            "provider": self.provider,
+            "model": self.model_name,
             "documents": 0,
             "dimensions": 0,
+            "metric": "cosine",
             "built_at": None,
         }
 
     def build(self, dishes: list[DishView]) -> None:
         self.dishes = list(dishes)
         texts = [document_text(dish) for dish in self.dishes]
-        self.embedder.fit(texts)
+        if self.provider == "minilm":
+            signature = f"{_catalog_hash()}:{self.model_name}:minilm"
+            ids = [dish.id for dish in self.dishes]
+            loaded = self.store.try_load(signature)
+            if loaded is None or loaded.ids != ids:
+                vectors = self.embedder.embed(texts)
+                self.store.save(ids, vectors, signature)
+            self.embedder.dimensions = int(self.store.vectors.shape[1]) if self.store.vectors.size else 0
+            backend = self.store.backend
+        else:
+            self.embedder.fit(texts)
+            backend = "tfidf"
         self.meta = {
-            "provider": "tfidf",
+            "provider": self.provider,
+            "model": self.model_name if self.provider == "minilm" else "tfidf",
             "documents": len(self.dishes),
             "dimensions": self.embedder.dimensions,
+            "metric": "cosine",
+            "vector_backend": backend,
             "built_at": datetime.now(timezone.utc).isoformat(),
         }
         CACHE_DIR.mkdir(parents=True, exist_ok=True)
@@ -158,10 +179,14 @@ class MenuIndex:
         pool = [dish for dish in pool if _mentions_food(dish, folded_original)]
         if not pool:
             return []
-        matrix = self.embedder.fitted_matrix
         position = {dish.id: index for index, dish in enumerate(self.dishes)}
-        query_vector = self.embedder.transform([expand_query(query)])
-        similarities = cosine_similarity(query_vector, matrix).ravel()
+        if self.provider == "minilm":
+            similarities = self.store.cosine(self.embedder.embed([expand_query(query)]))
+        else:
+            similarities = cosine_similarity(
+                self.embedder.transform([expand_query(query)]),
+                self.embedder.fitted_matrix,
+            ).ravel()
         scored: list[tuple[float, DishView]] = []
         for dish in pool:
             similarity = float(similarities[position[dish.id]])

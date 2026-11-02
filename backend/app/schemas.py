@@ -15,6 +15,7 @@ class DishOut(BaseModel):
     kind: str
     category: str
     badges: list[str]
+    predicted_tags: list[str] = []
 
 
 class RestaurantOut(BaseModel):
@@ -114,3 +115,12 @@ class AnalyticsOut(BaseModel):
     restaurants_indexed: int
     embedder: str
     dimensions: int
+
+
+class ClassifyRequest(BaseModel):
+    text: str = Field(min_length=3, max_length=500)
+
+
+class ClassifyResponse(BaseModel):
+    tags: list[str]
+    scores: dict[str, float]

@@ -24,10 +24,10 @@ from app.intent import (
     parse_intent,
 )
 from app.orders import save_order
-from app.pricing import build_quote
 from app.schemas import ChatRequest, ChatResponse, OrderOut
 from app.search import MenuIndex
 from app.serialize import dish_out, order_out
+from app.tools.menu import quote_items, search_menu as search_catalog
 
 logger = logging.getLogger("menumatch")
 
@@ -120,7 +120,8 @@ def _local(
     else:
         intent = parse_intent(message)
 
-    dishes, relaxed = index.search(
+    dishes, relaxed = search_catalog(
+        index,
         intent.query,
         max_price=intent.max_price,
         max_prep=intent.max_prep,
@@ -158,7 +159,7 @@ def _local(
         else:
             chosen, zone, zone_assumed = _choose(dishes, intent.zone)
         try:
-            quote = build_quote([(chosen, _quantity(message))], zone)
+            quote = quote_items(index, [chosen.id], [_quantity(message)], zone)
             order = order_out(
                 quote,
                 status="draft",
@@ -206,9 +207,12 @@ def _confirm(db: Session, index: MenuIndex, session: dict, session_id: str) -> C
             tools_used=[],
             provider="local",
         )
-    by_id = {dish.id: dish for dish in index.dishes}
-    pairs = [(by_id[item.dish_id], item.qty) for item in draft.items]
-    quote = build_quote(pairs, draft.zone)
+    quote = quote_items(
+        index,
+        [item.dish_id for item in draft.items],
+        [item.qty for item in draft.items],
+        draft.zone,
+    )
     order_id = save_order(
         db,
         quote,

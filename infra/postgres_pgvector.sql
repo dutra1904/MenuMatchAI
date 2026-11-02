@@ -1,7 +1,7 @@
 -- Alvo de produção do MenuMatch AI.
--- A aplicação persiste o catálogo com SQLAlchemy (SQLite por padrão,
--- ou PostgreSQL via DATABASE_URL) e mantém os embeddings em memória.
--- Este script é a evolução com pgvector: mesma busca por cosseno, índice no banco.
+-- A API persiste o catálogo com SQLAlchemy (SQLite por padrão, ou PostgreSQL
+-- via DATABASE_URL). Os embeddings ativos são MiniLM 384d, gravados em FAISS
+-- no processo da API. Este script é a mesma busca por cosseno dentro do banco.
 
 CREATE EXTENSION IF NOT EXISTS vector;
 
@@ -25,7 +25,7 @@ CREATE TABLE dishes (
     kind TEXT NOT NULL,
     price NUMERIC(10, 2) NOT NULL,
     prep_minutes INTEGER NOT NULL,
-    embedding VECTOR(768)
+    embedding VECTOR(384)
 );
 
 CREATE INDEX dishes_embedding_idx

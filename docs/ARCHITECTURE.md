@@ -8,10 +8,11 @@ O MenuMatch separa o que é restrição do que é semelhança de texto. Alergia,
 2. Na subida, `catalog.sync_catalog` grava isso no banco. Um hash do arquivo evita regravar quando nada mudou.
 3. `seed_orders.json` cria um histórico só se a tabela de pedidos estiver vazia. Os totais passam pela mesma função de preço dos pedidos ao vivo.
 4. `embeddings.document_text` monta o documento: nome, descrição, ingredientes, categoria, casa e dieta.
-5. `TfidfEmbedder` ajusta um vocabulário de até 768 dimensões, unigramas e bigramas, e guarda a matriz do catálogo.
-6. O manifesto (`documentos`, `dimensões`, horário) vai para `backend/.cache/index_meta.json`.
+5. `SentenceEmbedder` gera vetores de 384 dimensões com o MiniLM multilíngue (ONNX). `VectorStore` grava `vectors.npy` e `index.faiss`.
+6. O classificador multirrótulo (`services/classifier.py`) treina em `data/tag_train.json` e sugere tags a partir da descrição. Alergia e dieta do JSON continuam sendo a trava da busca.
+7. O manifesto (`documentos`, dimensões, horário) vai para `backend/.cache/index_meta.json`.
 
-O contrato do embedder é `fit` + `transform`. O índice ativo é TF-IDF, local e determinístico. Um cliente de embeddings de API entra no mesmo ponto, desde que o catálogo inteiro seja reindexado com o mesmo modelo: não se mistura vetor TF-IDF com vetor de API.
+`EMBEDDING_PROVIDER=tfidf` ainda existe como índice esparso local, sem baixar modelo. Não se mistura vetor TF-IDF com vetor MiniLM: a assinatura do índice inclui o nome do modelo.
 
 Restrições não são escritas artificialmente em todo prato livre de lactose. O filtro é que garante a restrição. O vetor descreve a comida.
 
@@ -26,7 +27,7 @@ Restrições não são escritas artificialmente em todo prato livre de lactose. 
 - zona atendida pelo restaurante
 - ids excluídos, no caso de "outra opção"
 
-A consulta é expandida com termos próximos (rápido → express, pizza → italiana) e comparada por cosseno. Um ajuste pequeno favorece prato principal, casa com nota mais alta e, quando a frase pede, pressa ou preço baixo. Entrada, bebida e sobremesa só sobem quando a frase fala delas.
+A consulta é expandida com termos próximos (rápido → express, pizza → italiana), embedada e comparada por cosseno no FAISS (`IndexFlatIP` sobre vetores normalizados). Um ajuste pequeno favorece prato principal, casa com nota mais alta e, quando a frase pede, pressa ou preço baixo. Entrada, bebida e sobremesa só sobem quando a frase fala delas.
 
 Se o filtro de tempo ou de preço esvazia o resultado, a busca abre um degrau: primeiro solta o tempo, depois soma R$ 15 ao teto. Alergia e dieta não são relaxadas. A resposta avisa quando isso acontece.
 
@@ -69,7 +70,7 @@ Confirmar pelo botão da interface chama `POST /api/orders`. O servidor relê o 
 
 SQLite em `backend/menumatch.db` é o padrão. `DATABASE_URL` troca para PostgreSQL sem mudar o código das rotas. Pedidos guardam nome e preço do item, então o histórico do painel não depende do texto atual do cardápio.
 
-`infra/postgres_pgvector.sql` descreve a evolução: a coluna `embedding vector(768)` e um índice HNSW. Hoje a comparação por cosseno acontece no processo da API, o que basta para o catálogo desta demo e deixa o caminho de produção explícito.
+`infra/postgres_pgvector.sql` descreve a evolução: a coluna `embedding vector(384)` e um índice HNSW com `vector_cosine_ops`. Hoje a comparação por cosseno acontece no FAISS, no processo da API, o que basta para o catálogo desta demo.
 
 ## Painel
 

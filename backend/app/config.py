@@ -16,6 +16,8 @@ class Settings(BaseSettings):
     cors_origins: str = "http://localhost:3000,http://127.0.0.1:3000"
     browse_minutes: float = 4.2
     agent_minutes: float = 0.7
+    embedding_provider: str = "minilm"
+    embedding_model: str = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
 
     model_config = SettingsConfigDict(
         env_file=(ROOT / ".env", BACKEND / ".env"),
