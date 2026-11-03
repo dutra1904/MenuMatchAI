@@ -3,13 +3,49 @@
 @tailwind utilities;
 
 body {
-  background-color: #f3eee6;
+  background-color: #eef2fb;
   background-image:
-    radial-gradient(circle at 8% 0%, rgba(196, 73, 29, 0.09), transparent 28%),
-    radial-gradient(circle at 100% 8%, rgba(31, 107, 69, 0.08), transparent 26%);
-  color: #1c1712;
+    radial-gradient(circle at 8% 0%, rgba(196, 50, 74, 0.12), transparent 28%),
+    radial-gradient(circle at 100% 8%, rgba(15, 122, 106, 0.12), transparent 26%);
+  color: #16182b;
 }
 
 ::selection {
-  background: #f0c7b6;
+  background: #f3c3ce;
+}
+
+.mm-dot {
+  height: 0.4rem;
+  width: 0.4rem;
+  border-radius: 999px;
+  background: #c4324a;
+  animation: mm-bounce 1s infinite ease-in-out;
+}
+
+.mm-ticket {
+  animation: mm-rise 0.35s ease;
+}
+
+@keyframes mm-bounce {
+  0%,
+  80%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.35;
+  }
+  40% {
+    transform: translateY(-3px);
+    opacity: 1;
+  }
+}
+
+@keyframes mm-rise {
+  from {
+    transform: translateY(6px);
+    opacity: 0.6;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }

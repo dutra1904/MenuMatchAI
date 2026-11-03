@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { firstName } from "@/lib/profile";
+import { useProfile } from "@/lib/useProfile";
 
 const links = [
   { href: "/", label: "Conversar" },
@@ -10,6 +12,8 @@ const links = [
 
 export function Nav() {
   const pathname = usePathname();
+  const { profile } = useProfile();
+  const who = firstName(profile);
   return (
     <header className="sticky top-0 z-30 border-b border-line/80 bg-paper/90 backdrop-blur">
       <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
@@ -22,7 +26,9 @@ export function Nav() {
             <span className="text-xs text-ink/60">Pedido certo, em uma frase</span>
           </span>
         </Link>
-        <nav className="flex gap-1 rounded-full bg-white/70 p-1">
+        <div className="flex items-center gap-3">
+          {who && <p className="hidden text-sm text-ink/70 sm:block">Olá, {who}</p>}
+          <nav className="flex gap-1 rounded-full bg-white/70 p-1">
           {links.map((link) => {
             const active = pathname === link.href;
             return (
@@ -37,7 +43,8 @@ export function Nav() {
               </Link>
             );
           })}
-        </nav>
+          </nav>
+        </div>
       </div>
     </header>
   );

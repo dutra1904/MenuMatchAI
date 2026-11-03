@@ -5,19 +5,19 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        paper: "#f3eee6",
-        ink: "#1c1712",
-        clay: "#c4491d",
-        moss: "#1f6b45",
-        card: "#fffaf3",
-        line: "#e4d7c6",
+        paper: "#eef2fb",
+        ink: "#16182b",
+        clay: "#c4324a",
+        moss: "#0f7a6a",
+        card: "#fbfcff",
+        line: "#d4dced",
       },
       fontFamily: {
         sans: ["var(--font-sans)", "Segoe UI", "sans-serif"],
         display: ["var(--font-display)", "Georgia", "serif"],
       },
       boxShadow: {
-        ticket: "0 16px 40px rgba(68, 42, 18, 0.08)",
+        ticket: "0 16px 40px rgba(22, 24, 43, 0.08)",
       },
     },
   },

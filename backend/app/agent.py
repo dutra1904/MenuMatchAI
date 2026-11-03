@@ -82,16 +82,43 @@ def handle_chat(
                 history=body.history,
                 session_id=session_id,
             )
-            if result.tools_used:
+            if result.tools_used and (result.order is not None or not _expects_order(session, body.message)):
+                _remember(session, body.message, result)
                 if result.order and result.order.status == "draft":
                     session["draft"] = result.order.model_dump()
                 return result
-            logger.info("LLM não chamou ferramentas; usando o orquestrador local.")
+            if result.tools_used:
+                logger.info("LLM não fechou o pedido; usando o orquestrador local.")
+            else:
+                logger.info("LLM não chamou ferramentas; usando o orquestrador local.")
         except LlmSkipped:
             pass
         except Exception:
             logger.exception("Falha no LLM; usando o orquestrador local.")
     return _local(db=db, index=index, session=session, session_id=session_id, body=body)
+
+
+def _expects_order(session: dict, message: str) -> bool:
+    previous = Intent(**session["intent"]) if session.get("intent") else None
+    if previous and is_followup(message):
+        return True
+    return parse_intent(message).wants_order
+
+
+def _remember(session: dict, message: str, result: ChatResponse) -> None:
+    if not is_confirm(message):
+        previous = Intent(**session["intent"]) if session.get("intent") else None
+        if previous and is_followup(message):
+            intent = merge_followup(message, previous, session.get("last_price"), session.get("last_id"))
+        else:
+            intent = parse_intent(message)
+        session["intent"] = asdict(intent)
+    if result.order and result.order.items:
+        session["last_id"] = result.order.items[0].dish_id
+        session["last_price"] = result.order.items[0].unit_price
+    elif result.recommendations:
+        session["last_id"] = result.recommendations[0].id
+        session["last_price"] = result.recommendations[0].price
 
 
 def _new_session_id() -> str:

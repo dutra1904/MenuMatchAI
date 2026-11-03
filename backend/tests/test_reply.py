@@ -1,5 +1,6 @@
+from app.agent import _remember
 from app.langchain_agent import customer_reply
-from app.schemas import DishOut, OrderItemOut, OrderOut
+from app.schemas import ChatResponse, DishOut, OrderItemOut, OrderOut
 
 BLOB = (
     'relaxed": null, "dishes": [{"dish_id": "ap-zero", "name": "Açaí Zero Lactose", '
@@ -44,6 +45,34 @@ def test_json_blob_becomes_a_sentence():
     assert "{" not in reply
     assert "Açaí Zero Lactose" in reply
     assert "R$ 24,00" in reply
+
+
+def test_llm_turn_keeps_zone_for_a_cheaper_followup():
+    session: dict = {}
+    _remember(session, "Quero algo leve na zona sul, sem lactose, por menos de R$ 40", _draft(32.9, "vl-quinoa"))
+    assert session["intent"]["zone"] == "zona_sul"
+    assert session["intent"]["exclude_allergens"] == ["lactose"]
+    _remember(session, "mais barato", _draft(22.0, "vl-tapioca"))
+    assert session["intent"]["zone"] == "zona_sul"
+    assert session["intent"]["exclude_allergens"] == ["lactose"]
+    assert session["intent"]["max_price"] == 24.9
+    assert session["last_id"] == "vl-tapioca"
+    _remember(session, "confirmar", _draft(22.0, "vl-tapioca"))
+    assert session["intent"]["zone"] == "zona_sul"
+
+
+def _draft(price: float, dish_id: str) -> ChatResponse:
+    order = _order()
+    order.items[0].dish_id = dish_id
+    order.items[0].unit_price = price
+    return ChatResponse(
+        session_id="s",
+        reply="ok",
+        recommendations=[],
+        order=order,
+        tools_used=["search_menu"],
+        provider="test",
+    )
 
 
 def test_markdown_order_becomes_a_sentence():
