@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import re
 from datetime import datetime, timezone
 from pathlib import Path
@@ -13,9 +14,13 @@ from app.catalog import DishView, _catalog_hash
 from app.config import BACKEND, settings
 from app.embeddings import TfidfEmbedder, document_text, expand_query, fold
 from app.services.sentence_embeddings import SentenceEmbedder
-from app.services.vector_store import VectorStore
+
+logger = logging.getLogger("menumatch")
 
 CACHE_DIR = BACKEND / ".cache"
+# O ONNX do MiniLM, somado ao scikit-learn, passa de 512 MiB na subida.
+# Abaixo disso o processo morre antes de abrir a porta (plano free/starter do Render).
+MINILM_MIN_BYTES = 1536 * 1024 * 1024
 KIND_HINTS = {
     "drink": r"suco|bebida|vitamina|milkshake|refrigerante|beber",
     "dessert": r"sobremesa|doce|acai|fruta",
@@ -36,6 +41,45 @@ FOOD_ALIASES = {
 }
 
 
+def _cgroup_memory_limit() -> int | None:
+    """Limite de RAM do container, em bytes. Sem cgroup, não há teto conhecido."""
+    for path in (
+        Path("/sys/fs/cgroup/memory.max"),
+        Path("/sys/fs/cgroup/memory/memory.limit_in_bytes"),
+    ):
+        try:
+            raw = path.read_text(encoding="utf-8").strip()
+        except OSError:
+            continue
+        if not raw or raw == "max":
+            continue
+        try:
+            value = int(raw)
+        except ValueError:
+            continue
+        # cgroup v1 usa um inteiro enorme quando o limite não está definido.
+        if value <= 0 or value >= 1 << 60:
+            continue
+        return value
+    return None
+
+
+def resolve_embedding_provider(requested: str) -> str:
+    provider = (requested or "minilm").strip().lower() or "minilm"
+    if provider != "minilm":
+        return provider
+    limit = _cgroup_memory_limit()
+    if limit is None or limit >= MINILM_MIN_BYTES:
+        return "minilm"
+    logger.warning(
+        "Instância com %s MiB de RAM. O MiniLM estoura esse limite ao baixar o ONNX "
+        "e o processo morre antes de abrir a porta. A busca sobe em TF-IDF. "
+        "Para o modelo denso, use uma instância com 2 GB ou mais.",
+        limit // (1024 * 1024),
+    )
+    return "tfidf"
+
+
 def _mentions_food(dish: DishView, folded_query: str) -> bool:
     mentioned = [term for term in FOOD_TERMS if term in folded_query]
     if not mentioned:
@@ -50,10 +94,16 @@ def _mentions_food(dish: DishView, folded_query: str) -> bool:
 
 class MenuIndex:
     def __init__(self) -> None:
-        self.provider = settings.embedding_provider.strip().lower() or "minilm"
+        self.provider = resolve_embedding_provider(settings.embedding_provider)
         self.model_name = settings.embedding_model
-        self.embedder = TfidfEmbedder() if self.provider == "tfidf" else SentenceEmbedder(self.model_name)
-        self.store = VectorStore(CACHE_DIR / "vectors")
+        self.store = None
+        if self.provider == "minilm":
+            from app.services.vector_store import VectorStore
+
+            self.embedder = SentenceEmbedder(self.model_name)
+            self.store = VectorStore(CACHE_DIR / "vectors")
+        else:
+            self.embedder = TfidfEmbedder()
         self.dishes: list[DishView] = []
         self.meta: dict = {
             "provider": self.provider,

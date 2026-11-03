@@ -141,6 +141,6 @@ A economia de tempo é uma estimativa: 4,2 min no cardápio contra 0,7 min com o
 
 O banco é SQLite ou PostgreSQL, conforme `DATABASE_URL`. O índice vetorial ativo é FAISS no processo da API. [infra/postgres_pgvector.sql](infra/postgres_pgvector.sql) é o mesmo cosseno dentro do Postgres, coluna `vector(384)` e HNSW.
 
-Na Vercel, publique a pasta `frontend` com `NEXT_PUBLIC_API_URL` apontando para a API. No Render, a raiz é `backend`, o build é `pip install -r requirements.txt -r requirements-llm.txt` e o start é `uvicorn app.main:app --host 0.0.0.0 --port $PORT`. O disco do Render é efêmero: cada boot novo baixa o ONNX de novo. Para pular isso, `EMBEDDING_PROVIDER=tfidf`.
+Na Vercel, publique a pasta `frontend` com `NEXT_PUBLIC_API_URL` apontando para a API. No Render, a raiz é `backend`, o build é `pip install -r requirements.txt -r requirements-llm.txt` e o start é `uvicorn app.main:app --host 0.0.0.0 --port $PORT`. O plano de 512 MB não comporta o ONNX do MiniLM: a subida detecta o limite do container e usa TF-IDF. Com 2 GB ou mais, o MiniLM carrega. O disco do Render é efêmero: cada boot novo baixa o ONNX de novo. `EMBEDDING_PROVIDER=tfidf` força o índice esparso em qualquer instância.
 
 `CORS_ORIGINS` tem de ser a origem exata do site, por exemplo `https://menu-match-ai.vercel.app`.

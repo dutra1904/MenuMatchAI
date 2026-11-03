@@ -31,6 +31,18 @@ HELD_OUT = [
 ]
 
 
+def test_low_memory_falls_back_to_tfidf(monkeypatch):
+    from app import search
+
+    monkeypatch.setattr(search, "_cgroup_memory_limit", lambda: 512 * 1024 * 1024)
+    assert search.resolve_embedding_provider("minilm") == "tfidf"
+    monkeypatch.setattr(search, "_cgroup_memory_limit", lambda: 2 * 1024 * 1024 * 1024)
+    assert search.resolve_embedding_provider("minilm") == "minilm"
+    monkeypatch.setattr(search, "_cgroup_memory_limit", lambda: None)
+    assert search.resolve_embedding_provider("minilm") == "minilm"
+    assert search.resolve_embedding_provider("tfidf") == "tfidf"
+
+
 def test_classifier_held_out_tags():
     metrics = evaluate(HELD_OUT)
     assert metrics["precision"] >= 0.75
